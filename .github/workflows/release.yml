@@ -20,4 +20,4 @@ jobs:
     - name: Pack
       run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
     - name: Push
-      run: dotnet nuget push ViteProxy.${VERSION}.nupkg --api-key ${{ secrets.NUGET_PUSH_API_KEY }}
+      run: dotnet nuget push ViteProxy.${VERSION}.nupkg -s https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_PUSH_API_KEY }}
