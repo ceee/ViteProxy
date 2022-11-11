@@ -1,4 +1,4 @@
-![ViteProxy](/viteproxy.png "ViteProxy")
+![ViteProxy](https://raw.githubusercontent.com/ceee/ViteProxy/main/viteproxy.png "ViteProxy")
 
 ## Introduction
 

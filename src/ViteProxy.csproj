@@ -20,7 +20,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageId>ViteProxy</PackageId>
     <PackageProjectUrl>https://github.com/ceee/ViteProxy</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/ceee/ViteProxy/main/viteproxy.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/ceee/ViteProxy/main/viteproxy-logo.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
