@@ -1,6 +1,8 @@
-**ViteProxy** is a proxy for vite projects within ASP.NET Core.
+![ViteProxy](/viteproxy.png "ViteProxy")
 
 ## Introduction
+
+**ViteProxy** is a proxy for vite projects within ASP.NET Core.
 
 This project is meant to be used within server-side applications and not within SPAs (single-page applications). 
 <br>
