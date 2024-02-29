@@ -8,15 +8,17 @@ namespace ViteProxy;
 public class ViteProxyService : IHostedService
 {
   ViteProxyOptions options;
+  ViteWorkingDirectory workingDirectory;
   ILogger<ViteProxyService> logger;
-  string workingDirectory;
   bool isRunning = false;
 
 
-  public ViteProxyService(IWebHostEnvironment env, ILogger<ViteProxyService> logger, IOptions<ViteProxyOptions> options)
+  public ViteProxyService(IWebHostEnvironment env, ILogger<ViteProxyService> logger, IOptions<ViteProxyOptions> options) : this(env, logger, options.Value ?? new()) { }
+
+  public ViteProxyService(IWebHostEnvironment env, ILogger<ViteProxyService> logger, ViteProxyOptions options)
   {
-    this.options = options.Value ?? new();
-    this.workingDirectory = Path.Combine(env.ContentRootPath, (this.options.WorkingDirectory ?? String.Empty).Trim('/'));
+    this.options = options ?? new();   
+    this.workingDirectory = new ViteWorkingDirectory(env, options.WorkingDirectory);
     this.logger = logger;
   }
 
@@ -30,16 +32,11 @@ public class ViteProxyService : IHostedService
     }
 
     // locate npm version and throw if it is not installed
-    Version npmVersion = await FindNpmVersion();
-
-    if (npmVersion == null)
-    {
-      throw new Exception("Please install node+npm to use the vite dev service (https://www.npmjs.com/)");
-    }
+    Version npmVersion = await FindNpmVersion() ?? throw new Exception("Please install node+npm to use the vite dev service (https://www.npmjs.com/)");
 
     // start vite server
     ProcessProxy viteProcess = await StartDevServer(options.Port);
-    logger.LogInformation("vite listening on: http://localhost:{port}", options.Port);
+    logger.LogInformation("vite listening on: http://localhost:{port} (path: {workingDirectory})", options.Port, this.workingDirectory.Path);
   }
 
   public Task StopAsync(CancellationToken cancellationToken)
@@ -55,7 +52,7 @@ public class ViteProxyService : IHostedService
   {
     Version version = null;
 
-    ProcessProxy process = new ProcessProxy(workingDirectory, "npm").Argument("-v").Capture((value, err) =>
+    ProcessProxy process = new ProcessProxy(workingDirectory.Path, "npm").Argument("-v").Capture((value, err) =>
     {
       if (version == null && !value.Contains("not recognized") && Version.TryParse(value, out Version _version))
       {
@@ -79,7 +76,7 @@ public class ViteProxyService : IHostedService
     PidUtils.KillPort((ushort)port, true);
 
     // create and run the vite script
-    ProcessProxy process = new ProcessProxy(workingDirectory, "npm", options.ForwardLog)
+    ProcessProxy process = new ProcessProxy(workingDirectory.Path, "npm", options.ForwardLog)
       .Argument("run " + options.ScriptName)
       .EnvVar("PORT", port.ToString())
       .Capture(CaptureLog);
