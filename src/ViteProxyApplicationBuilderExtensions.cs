@@ -41,7 +41,6 @@ public static class ViteProxyApplicationBuilderExtensions
     // TODO build full path
     ViteWorkingDirectory workingDirectory = new(env, path);
 
-    app.UseStaticFiles();
     app.UseStaticFiles(new StaticFileOptions
     {
       FileProvider = new PhysicalFileProvider(workingDirectory.Path)
