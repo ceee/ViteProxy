@@ -19,7 +19,6 @@ public static class ViteProxyApplicationBuilderExtensions
       return app;
     }
 
-    app.UseStaticFiles();
     app.UseStaticFiles(new StaticFileOptions
     {
       FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, workingDirectory))
@@ -38,7 +37,6 @@ public static class ViteProxyApplicationBuilderExtensions
       return app;
     }
 
-    app.UseStaticFiles();
     app.UseStaticFiles(new StaticFileOptions
     {
       FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, path))
