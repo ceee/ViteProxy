@@ -6,6 +6,7 @@
     <RootNamespace>ViteProxy</RootNamespace>
     <AssemblyName>ViteProxy</AssemblyName>
     <Version>0.0.0</Version>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup>
