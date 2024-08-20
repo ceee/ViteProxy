@@ -5,14 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ViteProxy</RootNamespace>
     <AssemblyName>ViteProxy</AssemblyName>
-    <Version>0.0.0</Version>
+    <Version>1.2.0</Version>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup>
     <Product>ViteProxy</Product>
     <Title>ViteProxy</Title>
-    <Copyright>Copyright © Tobias Klika 2022</Copyright>
+    <Copyright>Copyright © Tobias Klika 2024</Copyright>
     <Tags>Vite, npm, middleware, server, development</Tags>
     <Authors>Tobias Klika</Authors>
     <Description>ViteProxy is a proxy for vite projects within ASP.NET Core.</Description>
@@ -34,7 +34,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
