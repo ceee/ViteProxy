@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace ViteProxy;
@@ -18,6 +19,12 @@ public static class ViteProxyApplicationBuilderExtensions
   public static IApplicationBuilder UseViteStaticFiles(this IApplicationBuilder app, string path = null, string configName = null)
   {
     IWebHostEnvironment env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+
+    // do not provide static files when not in development
+    if (!env.IsDevelopment())
+    {
+      return app;
+    }
 
     if (path == null && configName == null)
     {

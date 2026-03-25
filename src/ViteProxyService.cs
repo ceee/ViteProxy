@@ -28,7 +28,7 @@ public class ViteProxyService : IHostedService
   /// <inheritdoc />
   public async Task StartAsync(CancellationToken cancellationToken)
   {
-    if (!this._options.Enabled)
+    if (!_options.Enabled || !_env.IsDevelopment())
     {
       return;
     }
@@ -38,7 +38,7 @@ public class ViteProxyService : IHostedService
 
     // start vite server
     ProcessProxy viteProcess = await StartDevServer(_options.Port);
-    _logger.LogInformation("vite listening on: http://localhost:{port} (path: {workingDirectory})", _options.Port, this._workingDirectory.Path);
+    _logger.LogInformation("vite listening on: http://localhost:{port} (path: {workingDirectory})", _options.Port, _workingDirectory.Path);
   }
 
   public Task StopAsync(CancellationToken cancellationToken)

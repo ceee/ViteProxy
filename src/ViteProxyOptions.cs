@@ -15,7 +15,7 @@ public class ViteProxyOptions
   /// <summary>
   /// Directory where the frontend files are located
   /// </summary>
-  public string WorkingDirectory { get; set; }
+  public string WorkingDirectory { get; set; } = "";
 
   /// <summary>
   /// Whether to enable the proxy or not
