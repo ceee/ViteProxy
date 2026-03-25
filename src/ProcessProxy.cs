@@ -8,27 +8,27 @@ namespace ViteProxy;
 
 public class ProcessProxy
 {
-  string workingDirectory;
-  string script;
-  Action<ProcessStartInfo> onProcessConfigure = null;
-  Action<string, bool> captureLog = null;
-  bool isWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-  Dictionary<string, string> envVars = new();
-  HashSet<string> arguments = new();
-  bool forwardLog = false;
+  readonly string _workingDirectory;
+  readonly string _script;
+  Action<ProcessStartInfo> _onProcessConfigure = null;
+  Action<string, bool> _captureLog = null;
+  bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+  readonly Dictionary<string, string> _envVars = new();
+  readonly HashSet<string> _arguments = new();
+  readonly bool _forwardLog = false;
 
-  Process process = null;
-  EventedStreamReader stdOut;
-  EventedStreamReader stdErr;
+  Process _process = null;
+  EventedStreamReader _stdOut;
+  EventedStreamReader _stdErr;
 
 
 
 
   public ProcessProxy(string workingDirectory, string script, bool forwardLog = false)
   {
-    this.workingDirectory = workingDirectory;
-    this.script = script;
-    this.forwardLog = forwardLog;
+    this._workingDirectory = workingDirectory;
+    this._script = script;
+    this._forwardLog = forwardLog;
   }
 
 
@@ -37,7 +37,7 @@ public class ProcessProxy
   /// </summary>
   public ProcessProxy EnvVar(string key, string value)
   {
-    envVars.Add(key, value);
+    _envVars.Add(key, value);
     return this;
   }
 
@@ -47,7 +47,7 @@ public class ProcessProxy
   /// </summary>
   public ProcessProxy Argument(string argument)
   {
-    arguments.Add(argument);
+    _arguments.Add(argument);
     return this;
   }
 
@@ -57,7 +57,7 @@ public class ProcessProxy
   /// </summary>
   public ProcessProxy Configure(Action<ProcessStartInfo> onProcessConfigure)
   {
-    this.onProcessConfigure = onProcessConfigure;
+    this._onProcessConfigure = onProcessConfigure;
     return this;
   }
 
@@ -67,7 +67,7 @@ public class ProcessProxy
   /// </summary>
   public ProcessProxy Capture(Action<string, bool> action)
   {
-    this.captureLog = action;
+    this._captureLog = action;
     return this;
   }
 
@@ -80,16 +80,16 @@ public class ProcessProxy
   {
     StartProcess();
 
-    using var stdErrReader = new EventedStreamStringReader(stdErr);
+    using var stdErrReader = new EventedStreamStringReader(_stdErr);
     try
     {
       // TODO implement timeout
       // https://stackoverflow.com/questions/18760252/timeout-an-async-method-implemented-with-taskcompletionsource
-      await stdOut.WaitForFinish(); 
+      await _stdOut.WaitForFinish();
     }
     catch (EndOfStreamException ex)
     {
-      throw new InvalidOperationException($"The script '{script}' exited without indicating that the server was listening for requests.\nThe error output was: " + $"{stdErrReader.ReadAsString()}", ex);
+      throw new InvalidOperationException($"The script '{_script}' exited without indicating that the server was listening for requests.\nThe error output was: " + $"{stdErrReader.ReadAsString()}", ex);
     }
   }
 
@@ -102,22 +102,22 @@ public class ProcessProxy
   {
     StartProcess();
 
-    using var stdErrReader = new EventedStreamStringReader(stdErr);
+    using var stdErrReader = new EventedStreamStringReader(_stdErr);
     try
     {
-      await stdOut.WaitForMatch(new Regex(startupCondition, RegexOptions.IgnoreCase, startupTimeout == default ? TimeSpan.FromMinutes(5) : startupTimeout));
+      await _stdOut.WaitForMatch(new Regex(startupCondition, RegexOptions.IgnoreCase, startupTimeout == default ? TimeSpan.FromMinutes(5) : startupTimeout));
     }
     catch (EndOfStreamException ex)
     {
-      throw new InvalidOperationException($"The script '{script}' exited without indicating that the server was listening for requests.\nThe error output was: " + $"{stdErrReader.ReadAsString()}", ex);
+      throw new InvalidOperationException($"The script '{_script}' exited without indicating that the server was listening for requests.\nThe error output was: " + $"{stdErrReader.ReadAsString()}", ex);
     }
   }
 
 
   public void Exit()
   {
-    try { process?.Kill(); } catch { }
-    try { process?.WaitForExit(); } catch { }
+    try { _process?.Kill(); } catch { }
+    try { _process?.WaitForExit(); } catch { }
 
     AppDomain.CurrentDomain.DomainUnload -= UnloadHandler;
     AppDomain.CurrentDomain.ProcessExit -= UnloadHandler;
@@ -130,18 +130,18 @@ public class ProcessProxy
   /// </summary>
   Process StartProcess()
   {
-    string executable = script;
+    string executable = _script;
 
     StringBuilder command = new();
-    command.Append(script);
+    command.Append(_script);
     command.Append(' ');
-    foreach (string arg in arguments)
+    foreach (string arg in _arguments)
     {
       command.Append(arg);
     }
     string argumentList = command.ToString();
 
-    if (isWindows)
+    if (IsWindows)
     {
       argumentList = $"/c {argumentList}";
       executable = "cmd";
@@ -154,20 +154,20 @@ public class ProcessProxy
       RedirectStandardInput = true,
       RedirectStandardOutput = true,
       RedirectStandardError = true,
-      WorkingDirectory = workingDirectory
+      WorkingDirectory = _workingDirectory
     };
 
-    foreach (var envVar in envVars)
+    foreach (var envVar in _envVars)
     {
       startInfo.Environment[envVar.Key] = envVar.Value;
     }
 
-    onProcessConfigure?.Invoke(startInfo);
+    _onProcessConfigure?.Invoke(startInfo);
 
     try
     {
-      process = Process.Start(startInfo);
-      process.EnableRaisingEvents = true;
+      _process = Process.Start(startInfo);
+      _process.EnableRaisingEvents = true;
     }
     catch (Exception ex)
     {
@@ -185,7 +185,7 @@ public class ProcessProxy
     AppDomain.CurrentDomain.ProcessExit += UnloadHandler;
     AppDomain.CurrentDomain.UnhandledException += UnloadHandler;
 
-    return process;
+    return _process;
   }
 
 
@@ -197,13 +197,13 @@ public class ProcessProxy
 
   void AttachLogger(bool isStream = false)
   {
-    stdOut = new EventedStreamReader(process.StandardOutput);
-    stdErr = new EventedStreamReader(process.StandardError);
+    _stdOut = new EventedStreamReader(_process.StandardOutput);
+    _stdErr = new EventedStreamReader(_process.StandardError);
 
-    stdOut.OnReceivedLine += line => WriteToLog(line);
-    stdOut.OnReceivedChunk += chunk => WriteToLog(chunk);
-    stdErr.OnReceivedLine += line => WriteToLog(line, true);
-    stdErr.OnReceivedChunk += chunk => WriteToLog(chunk, true);
+    _stdOut.OnReceivedLine += line => WriteToLog(line);
+    _stdOut.OnReceivedChunk += chunk => WriteToLog(chunk);
+    _stdErr.OnReceivedLine += line => WriteToLog(line, true);
+    _stdErr.OnReceivedChunk += chunk => WriteToLog(chunk, true);
   }
 
 
@@ -216,11 +216,11 @@ public class ProcessProxy
 
     line = line.StartsWith("<s>") ? line.Substring(3) : line;
 
-    if (captureLog != null)
+    if (_captureLog != null)
     {
-      captureLog(line, isError);
+      _captureLog(line, isError);
     }
-    if (forwardLog)
+    if (_forwardLog)
     {
       (isError ? Console.Error : Console.Out).WriteLine(line);
     }
@@ -236,11 +236,11 @@ public class ProcessProxy
       return;
     }
 
-    if (captureLog != null)
+    if (_captureLog != null)
     {
-      captureLog(new String(chunk.Array, chunk.Offset, chunk.Count), isError);
+      _captureLog(new String(chunk.Array, chunk.Offset, chunk.Count), isError);
     }
-    if (forwardLog)
+    if (_forwardLog)
     {
       (isError ? Console.Error : Console.Out).Write(chunk.Array, chunk.Offset, chunk.Count);
     }

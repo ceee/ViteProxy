@@ -7,26 +7,28 @@ namespace ViteProxy;
 
 public class ViteProxyService : IHostedService
 {
-  ViteProxyOptions options;
-  ViteWorkingDirectory workingDirectory;
-  ILogger<ViteProxyService> logger;
-  bool isRunning = false;
+  readonly ViteProxyOptions _options;
+  readonly ViteWorkingDirectory _workingDirectory;
+  readonly ILogger<ViteProxyService> _logger;
+  readonly IWebHostEnvironment _env;
+  bool _isRunning = false;
 
 
   public ViteProxyService(IWebHostEnvironment env, ILogger<ViteProxyService> logger, IOptions<ViteProxyOptions> options) : this(env, logger, options.Value ?? new()) { }
 
   public ViteProxyService(IWebHostEnvironment env, ILogger<ViteProxyService> logger, ViteProxyOptions options)
   {
-    this.options = options ?? new();   
-    this.workingDirectory = new ViteWorkingDirectory(env, options.WorkingDirectory);
-    this.logger = logger;
+    _options = options ?? new();
+    _workingDirectory = new ViteWorkingDirectory(env, _options.WorkingDirectory);
+    _env = env;
+    _logger = logger;
   }
 
 
   /// <inheritdoc />
   public async Task StartAsync(CancellationToken cancellationToken)
   {
-    if (!this.options.Enabled)
+    if (!this._options.Enabled)
     {
       return;
     }
@@ -35,8 +37,8 @@ public class ViteProxyService : IHostedService
     Version npmVersion = await FindNpmVersion() ?? throw new Exception("Please install node+npm to use the vite dev service (https://www.npmjs.com/)");
 
     // start vite server
-    ProcessProxy viteProcess = await StartDevServer(options.Port);
-    logger.LogInformation("vite listening on: http://localhost:{port} (path: {workingDirectory})", options.Port, this.workingDirectory.Path);
+    ProcessProxy viteProcess = await StartDevServer(_options.Port);
+    _logger.LogInformation("vite listening on: http://localhost:{port} (path: {workingDirectory})", _options.Port, this._workingDirectory.Path);
   }
 
   public Task StopAsync(CancellationToken cancellationToken)
@@ -52,7 +54,7 @@ public class ViteProxyService : IHostedService
   {
     Version version = null;
 
-    ProcessProxy process = new ProcessProxy(workingDirectory.Path, "npm").Argument("-v").Capture((value, err) =>
+    ProcessProxy process = new ProcessProxy(_workingDirectory.Path, "npm").Argument("-v").Capture((value, err) =>
     {
       if (version == null && !value.Contains("not recognized") && Version.TryParse(value, out Version _version))
       {
@@ -76,14 +78,14 @@ public class ViteProxyService : IHostedService
     PidUtils.KillPort((ushort)port, true);
 
     // create and run the vite script
-    ProcessProxy process = new ProcessProxy(workingDirectory.Path, "npm", options.ForwardLog)
-      .Argument("run " + options.ScriptName)
+    ProcessProxy process = new ProcessProxy(_workingDirectory.Path, "npm", _options.ForwardLog)
+      .Argument("run " + _options.ScriptName)
       .EnvVar("PORT", port.ToString())
       .Capture(CaptureLog);
 
-    await process.RunAsync(options.StartupCondition, TimeSpan.FromSeconds(options.TimeoutInSeconds));
+    await process.RunAsync(_options.StartupCondition, TimeSpan.FromSeconds(_options.TimeoutInSeconds));
 
-    isRunning = true;
+    _isRunning = true;
 
     return process;
   }
@@ -91,18 +93,18 @@ public class ViteProxyService : IHostedService
 
   void CaptureLog(string line, bool isError)
   {
-    if (!isRunning)
+    if (!_isRunning)
     {
       return;
     }
 
     if (isError)
     {
-      logger.LogWarning(line);
+      _logger.LogWarning(line);
     }
     else
     {
-      logger.LogInformation(line);
+      _logger.LogInformation(line);
     }
   }
 }
