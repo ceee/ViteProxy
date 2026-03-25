@@ -81,6 +81,7 @@ public class ViteProxyService : IHostedService
     ProcessProxy process = new ProcessProxy(_workingDirectory.Path, "npm", _options.ForwardLog)
       .Argument("run " + _options.ScriptName)
       .EnvVar("PORT", port.ToString())
+      //.EnvVar("URL_PREFIX", "/@viteproxy/")
       .Capture(CaptureLog);
 
     await process.RunAsync(_options.StartupCondition, TimeSpan.FromSeconds(_options.TimeoutInSeconds));

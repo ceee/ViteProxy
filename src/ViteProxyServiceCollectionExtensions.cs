@@ -8,23 +8,23 @@ namespace ViteProxy;
 
 public static class ViteProxyServiceCollectionExtensions
 {
-  public static IServiceCollection AddViteProxy(this IServiceCollection services)
+  public static IServiceCollection AddViteProxy(this IServiceCollection services, string configSectionPath = "Vite")
   {
     services.AddLogging();
     services.AddOptions();
     services.AddHostedService<ViteProxyService>();
-    services.AddOptions<ViteProxyOptions>().BindConfiguration("Vite");
+    services.AddOptions<ViteProxyOptions>().BindConfiguration(configSectionPath);
 
     return services;
   }
 
 
-  public static IServiceCollection AddViteProxy(this IServiceCollection services, Action<ViteProxyOptions> configure)
+  public static IServiceCollection AddViteProxy(this IServiceCollection services, Action<ViteProxyOptions> configure, string configSectionPath = "Vite")
   {
     services.AddLogging();
     services.AddOptions();
     services.AddHostedService<ViteProxyService>();
-    services.AddOptions<ViteProxyOptions>().BindConfiguration("Vite");
+    services.AddOptions<ViteProxyOptions>().BindConfiguration(configSectionPath);
     services.PostConfigure(configure);
 
     return services;
