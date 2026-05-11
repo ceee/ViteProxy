@@ -5,13 +5,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ViteProxy</RootNamespace>
     <AssemblyName>ViteProxy</AssemblyName>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../viteproxy-logo.png" Pack="true"  PackagePath="\" />
+    <None Include="../README.md" Pack="true"  PackagePath="\" />
+  </ItemGroup>
 
   <PropertyGroup>
     <Product>ViteProxy</Product>
     <Title>ViteProxy</Title>
-    <Copyright>Copyright © Tobias Klika 2024</Copyright>
+    <Copyright>Copyright © Tobias Klika 2026</Copyright>
     <Tags>Vite, npm, middleware, server, development</Tags>
     <Authors>Tobias Klika</Authors>
     <Description>ViteProxy is a proxy for vite projects within ASP.NET Core.</Description>
@@ -20,7 +25,8 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageId>ViteProxy</PackageId>
     <PackageProjectUrl>https://github.com/ceee/ViteProxy</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/ceee/ViteProxy/main/viteproxy-logo.png</PackageIconUrl>
+    <PackageIcon>viteproxy-logo.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
